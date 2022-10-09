@@ -12,11 +12,11 @@ python3 LogisticRegression.py
 * Output
 
 * LinearRegression
-MSE is xxx
-Intercept is [*w*~0~] and weights are [*w*~1~, *w*~2~, ...]
+MSE is `xxx`
+Intercept is [*w*<sub>0</sub>] and weights are [*w*<sub>1</sub>, *w*<sub>2</sub>, ...]
 * LogisticRegression
-Cross Entropy Error is xxx
-Intercept is [*w*~0~] and weights are `[*w*~1~, *w*~2~, ...]
+Cross Entropy Error is `xxx`
+Intercept is [*w*<sub>0</sub>] and weights are [*w*<sub>1</sub>, *w*<sub>2</sub>, ...]
 
 
 
