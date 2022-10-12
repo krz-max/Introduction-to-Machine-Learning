@@ -61,7 +61,7 @@ def ClassToNegativeOne(ground_truth):
 
 def main():
     # Logistic Using Logistic Regression
-    x_train, x_test, y_train, y_test = np.load('classification_data.npy', allow_pickle=True)
+    x_train, x_test, y_train, y_test = np.load('../data/classification_data.npy', allow_pickle=True)
     # Initialize Weight using Standard Gaussian
     weight = InitializeWeight(dim=2)
     # Start Learning

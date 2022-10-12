@@ -69,7 +69,7 @@ def Mean_Square_Error(test_data, pred):
     return sum[0]
 
 if __name__ == "__main__":
-    x_train, x_test, y_train, y_test = np.load('regression_data.npy', allow_pickle=True)
+    x_train, x_test, y_train, y_test = np.load('../data/regression_data.npy', allow_pickle=True)
     # print(x_train)
     # print(y_train.shape)
     weight = LinearRegression(x_data=x_train, y_data=y_train, learning_rate=0.0001, x_test=x_test, y_test=y_test, iter=100)
