@@ -22,6 +22,6 @@ Intercept is [*w*<sub>0</sub>] and weights are [*w*<sub>1</sub>, *w*<sub>2</sub>
 
 | Method            | Learning Curve | Result |
 | ----------------- | -------- | -------- |
-| Logistic Regression | ![](HW1/Logistic_LearningCurve.jpg) | ![](HW1/Logistic_Result.jpg)         |
-| Linear Regression | ![](HW1/Linear_LearningCurve.jpg)     | ![](HW1/Linear_Result.jpg)     |
+| Logistic Regression | ![](HW1/result/Logistic_LearningCurve.jpg) | ![](HW1/result/Logistic_Result.jpg)         |
+| Linear Regression | ![](HW1/result/Linear_LearningCurve.jpg)     | ![](HW1/result/Linear_Result.jpg)     |
 
