@@ -81,12 +81,12 @@ def Predict(x_train, x_test, y_train, y_test):
         acc = accuracy_score(y_test, y_pred)
         print(f"Accuracy of test-set {acc}")
 
-def PlotResult(Bias, MarkerSize, VectorRange, Alpha, LineWidth, Group1, Group2):
-    plt.title(f'Projection Line: w={(w[1]/w[0])[0]}, b={Bias}')
-    plt.plot([-VectorRange*w[0]+Bias, VectorRange*w[0]+Bias], [-VectorRange*w[1]+Bias, VectorRange*w[1]+Bias], 'y-')
+def PlotResult(Bias, MarkerSize, Alpha, LineWidth, Group1, Group2, weight):
+    plt.title(f'Projection Line: w={(weight[1]/weight[0])[0]}, b={Bias}')
+    plt.plot([-6*weight[0], 5*weight[0]], [-6*weight[1], 5*weight[1]], 'y-')
     plt.scatter(Group1[:, 0], Group1[:, 1], c='b', s=MarkerSize)
     plt.scatter(Group2[:, 0], Group2[:, 1], c='r', s=MarkerSize)
-    r = w.reshape(2,)
+    r = weight.reshape(2,)
     r2 = np.linalg.norm(r)**2
     for pt in Group1:
         prj = r * r.dot(pt) / r2
@@ -105,6 +105,6 @@ if __name__ == "__main__":
     Predict(x_train=x_train, x_test=x_test, y_train=y_train, y_test=y_test)
     
     # Plotting Result
-    PlotResult(Bias=0, MarkerSize=4, VectorRange=6, Alpha=0.2, LineWidth=0.5, Group1=Group1, Group2=Group2)
+    PlotResult(Bias=0, MarkerSize=4, Alpha=0.2, LineWidth=0.5, Group1=Group1, Group2=Group2, weight=w)
     
     pass
