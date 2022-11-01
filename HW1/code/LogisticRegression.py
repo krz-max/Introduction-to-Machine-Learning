@@ -54,7 +54,7 @@ def myModel(weight, x_data):
     return sigmoid(an)
 # if x is 1-d array, do element-wise exponential    
 def sigmoid(x):
-    return 1 / (1 + np.exp(x))
+    return 1 / (1 + np.exp(-x))
 
 def ClassToNegativeOne(ground_truth):
     return np.where(ground_truth > 0, 1, -1)
