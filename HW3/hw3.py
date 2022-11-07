@@ -1,6 +1,8 @@
 # Copy and paste your implementations right here to check your result
 # (Of course you can add your classes not written here)
 # return the probability of each classes
+import pandas as pd
+import random
 import numpy as np
 
 
@@ -15,12 +17,14 @@ def ParseClasses(sequence):
     """
     class_seq = np.unique(sequence)
     kclasses = class_seq.shape[0]
-    prob = {x: (np.count_nonzero(sequence==x) / sequence.shape[0]) for x in class_seq}
+    prob = {x: (np.count_nonzero(sequence == x) /
+                sequence.shape[0]) for x in class_seq}
     print(f"There are {kclasses} classes in this dataset")
     print("The class labels and the probability of each class is")
     print(prob)
     return prob
-    
+
+
 def gini(sequence):
     # Class_stat = ParseClasses(sequence=np.array(sequence))
     class_seq, cnt = np.unique(sequence.astype(np.int32), return_counts=True)
@@ -34,7 +38,7 @@ def entropy(sequence):
     class_seq, cnt = np.unique(sequence.astype(np.int32), return_counts=True)
     p = cnt / sequence.shape[0]
     return (-1) * np.sum(np.where(p == 0, 0, p * np.log2(p)))
-import pandas as pd
+
 
 train_df = pd.read_csv('train.csv')
 val_df = pd.read_csv('val.csv')
@@ -43,6 +47,8 @@ val_df = pd.read_csv('val.csv')
 # train_df.head()
 x_train = np.array(train_df)
 x_test = np.array(val_df)
+
+
 class Question():
     def __init__(self, column, value):
         self.column = column
@@ -54,28 +60,20 @@ class Question():
         return val >= self.value
 
 
-def partition(x_data, question):
-    true_rows, false_rows = [], []
-    for row in x_data:
-        if question.match(row):
-            true_rows.append(row)
-        else:
-            false_rows.append(row)
-    return true_rows, false_rows
-
-
 class DecisionTree():
-    def __init__(self, criterion='gini', max_depth=None):
+    def __init__(self, criterion='gini', max_depth=None, k_features=None):
         self.criterion = criterion
         self.max_depth = max_depth
         self.n_features = None
         self.root = None
+        self.k_features = k_features
         self.feature_count = {}
         if criterion == 'gini':
             self.measureFunc = gini
         else:
             self.measureFunc = entropy
         return None
+
     class TreeNode():
         def __init__(self, rows, gain, question):
             self.rows = rows
@@ -85,6 +83,7 @@ class DecisionTree():
             self.left = None
             self.right = None
             return None
+
         def __init__(self):
             self.rows = None
             self.gain = None
@@ -93,11 +92,15 @@ class DecisionTree():
             self.left = None
             self.right = None
             return None
+
         def print_node_info(self):
-            print(f'The node\'s depth is {self.depth}, impurity is {self.impurity}')
-            print(f'Question is {self.question.column}, and threshold is {self.question.value}')
+            print(
+                f'The node\'s depth is {self.depth}, impurity is {self.impurity}')
+            print(
+                f'Question is {self.question.column}, and threshold is {self.question.value}')
             print(f'{self.left}, {self.right}')
             return None
+
     def Informationgain(self, left_rows, right_rows, currentImpurity):
         p = float(len(left_rows)) / (len(left_rows) + len(right_rows))
         return currentImpurity - p * self.measureFunc(left_rows[:, -1].astype(np.int32)) - (1 - p) * self.measureFunc(right_rows[:, -1].astype(np.int32))
@@ -113,8 +116,11 @@ class DecisionTree():
         best_question = None
         current_impurity = self.measureFunc(rows[:, -1].astype(np.int32))
 
+        if self.k_features is not None:
+            # choose $(max_features) features from data
+            n_cols = random.sample(range(rows.shape[1]-1), k=self.k_features)
         # for each feature
-        for col in range(len(rows[0])-1):
+        for col in n_cols:
             # sort data using values in column `col`
             # extract the data sorted using current feature
             col_sort = rows[np.argsort(rows[:, col])]
@@ -122,7 +128,8 @@ class DecisionTree():
             # Try N-1 threshold values
             for idx in range(len(col_sort)-1):
                 # i-th and i+1-th sorted value as current threshold
-                current_threshold = (col_sort[idx, col] + col_sort[idx+1, col]) / 2.0
+                current_threshold = (
+                    col_sort[idx, col] + col_sort[idx+1, col]) / 2.0
 
                 # is data[col] >= current_threshold ?
                 # if it's binary, the threshold is 0.5, so it's ok to use '>=' to compare
@@ -132,13 +139,13 @@ class DecisionTree():
 
                 # split the data using current question
                 # true and false are candidates for best split(potential child nodes)
-                true_rows  = col_sort[col_sort[:, col] >= current_threshold]
-                false_rows = col_sort[col_sort[:, col] <  current_threshold]
+                true_rows = col_sort[col_sort[:, col] >= current_threshold]
+                false_rows = col_sort[col_sort[:, col] < current_threshold]
 
                 # # Pick the split that maximize information gain
                 current_gain = self.Informationgain(left_rows=true_rows,
-                                                        right_rows=false_rows,
-                                                        currentImpurity=current_impurity)
+                                                    right_rows=false_rows,
+                                                    currentImpurity=current_impurity)
                 # print(current_gain)
                 if current_gain >= best_gain:
                     best_gain, best_question = current_gain, question
@@ -148,14 +155,16 @@ class DecisionTree():
         else:
             self.feature_count[label] = 1
         return best_gain, best_question
+
     def get_feature_count(self):
         print(self.feature_count)
-        return 
+        return
+
     def generateTree(self, rows, cur_depth=None):
         cur_node = self.TreeNode()
-        if np.all(rows[:,-1].astype(np.int32) == 1):
+        if np.all(rows[:, -1].astype(np.int32) == 1):
             cur_node.pred = 1
-        elif np.all(rows[:,-1].astype(np.int32) == 0):
+        elif np.all(rows[:, -1].astype(np.int32) == 0):
             cur_node.pred = 0
         elif self.measureFunc(sequence=rows[:, -1].astype(np.int32)) == 0:
             cur_node.pred = int(rows[0, -1])
@@ -170,44 +179,51 @@ class DecisionTree():
             cur_node.rows = rows
             cur_node.gain = best_gain
             cur_node.question = best_question
-            left_child = rows[rows[:, best_question.column]>=best_question.value]
-            right_child = rows[rows[:, best_question.column]<best_question.value]
+            left_child = rows[rows[:, best_question.column]
+                              >= best_question.value]
+            right_child = rows[rows[:, best_question.column]
+                               < best_question.value]
             if cur_depth is None:
                 cur_node.left = self.generateTree(rows=left_child)
                 cur_node.right = self.generateTree(rows=right_child)
             else:
-                cur_node.left = self.generateTree(rows=left_child, cur_depth=cur_depth-1)
-                cur_node.right = self.generateTree(rows=right_child, cur_depth=cur_depth-1)
+                cur_node.left = self.generateTree(
+                    rows=left_child, cur_depth=cur_depth-1)
+                cur_node.right = self.generateTree(
+                    rows=right_child, cur_depth=cur_depth-1)
         return cur_node
     # Generate Tree by fitting data
+
     def fit(self, x_data, y_data):
         self.feature_count = {}
         y_data = y_data[:, np.newaxis]
         rows = np.hstack((x_data, y_data))
-        print(rows[0:10])
         self.n_features = len(x_data[0]) - 1
         self.root = self.generateTree(rows=rows, cur_depth=self.max_depth)
     # After fitting, use the gererated tree to predict x_data
+
     def feature_importance(self):
         fi = []
         for key in self.feature_count.keys():
             fi.append(self.feature_count[key])
         return fi
+
     def traverse(self, cur_node, x_data):
         if cur_node is None:
-            return 
+            return
         if cur_node.question is None:
             return cur_node.pred
         if cur_node.question.match(x_data) == 1:
             return self.traverse(cur_node=cur_node.left, x_data=x_data)
         else:
             return self.traverse(cur_node=cur_node.right, x_data=x_data)
+
     def print_acc(self, acc):
         print(f'criterion = {self.criterion}')
         print(f'max depth = {self.max_depth}')
         print(f'acc       = {acc}')
         print('====================')
-    
+
     def predict(self, x_data):
         miss_num = 0
         total_num = len(x_data)
@@ -219,22 +235,52 @@ class DecisionTree():
             if ans != row[-1]:
                 miss_num = miss_num + 1
         accuracy = 1 - (miss_num / total_num)
-        self.print_acc(acc=accuracy)
+        # self.print_acc(acc=accuracy)
         return accuracy, pred
-# clf_gini = DecisionTree(criterion='gini', max_depth=None)
-# clf_gini.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-# # clf_depth3.print_tree(clf_depth3.root, '')
-# clf_gini.get_feature_count()
-# acc, _ = clf_gini.predict(x_test)
 
-# clf_entropy = DecisionTree(criterion='entropy', max_depth=None)
-# clf_entropy.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-# # clf_depth3.print_tree(clf_depth3.root, '')
-# clf_entropy.get_feature_count()
-# acc, _ = clf_entropy.predict(x_test)
+class AdaBoost():
+    def __init__(self, n_estimators, max_features, bootstrap, criterion):
+        self.n_estimators = n_estimators
+        self.max_features = max_features
+        self.use_bootstrap = bootstrap
+        self.criterion = criterion
+        if criterion == 'gini':
+            self.meas_func = gini
+        else:
+            self.meas_func = entropy
+        self.n_trees = [DecisionTree(self.criterion, max_depth=1) for i in range(n_estimators)]
+        self.distribution = None
+        return None
 
-import random
+    def print_acc(self, acc):
+        print(f'criterion = {self.criterion}')
+        print(f'max depth = {self.max_depth}')
+        print(f'acc       = {acc}')
+        print('====================')
+    def fit(self, x_data, y_data):
+        self.distribution = np.array(1 / x_data.shape[0], x_data.shape[0])
+        for iter in range(self.n_estimators):
+            self.n_trees[iter].fit(x_data=x_data, y_data=y_data)
+            pass
+        pass
+    def predict(self, x_data):
+        pass
+ada_10est = AdaBoost(n_estimators=10)
+ada_10est.fit(x_train[:, 20], x_train[:, -1])
+ada_100est = AdaBoost(n_estimators=100)
+ada_100est.fit(x_train[:, 20], x_train[:, -1])
+# for i in range(10):
+#     clf_gini = DecisionTree(criterion='gini', max_depth=None)
+#     clf_gini.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+#     # clf_depth3.print_tree(clf_depth3.root, '')
+#     clf_gini.get_feature_count()
+#     acc, _ = clf_gini.predict(x_test)
 
+#     clf_entropy = DecisionTree(criterion='entropy', max_depth=None)
+#     clf_entropy.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+#     # clf_depth3.print_tree(clf_depth3.root, '')
+#     clf_entropy.get_feature_count()
+#     acc, _ = clf_entropy.predict(x_test)
 
 class RandomForest():
     def __init__(self, n_estimators, max_features, bootstrap=True, criterion='gini', max_depth=None):
@@ -245,24 +291,25 @@ class RandomForest():
         self.max_depth = max_depth
         self.n_trees = []
         for i in range(self.n_estimators):
-            self.n_trees.append(DecisionTree(self.criterion, self.max_depth))
+            self.n_trees.append(DecisionTree(self.criterion, self.max_depth, self.max_features))
         return None
-    
+
     def fit(self, x_data, y_data):
         for iter in range(self.n_estimators):
             if self.use_bootstrap == True:
-                # choose $(max_features) features from data
-                n_cols = random.sample(range(x_data.shape[1]), k=self.max_features)
+                # # choose $(max_features) features from data
+                # n_cols = random.sample(range(x_data.shape[1]), k=self.max_features)
                 # draw N random samples from dataset
                 n_rows = np.random.randint(x_data.shape[0], size=len(x_data))
                 rows = x_data[n_rows]
-                rows = rows[:, n_cols]
-                print(train_df.columns[n_cols])
-                print(rows.shape)
+                # print(train_df.columns[n_cols])
+                # print(rows.shape)
                 self.n_trees[iter].fit(rows, y_data[n_rows])
             else:
                 self.n_trees[iter].fit(x_data=x_data, y_data=y_data)
+            print(f'{iter+1} tree done')
         return
+
     def print_acc(self, acc):
         print(f'n estimators = {self.n_estimators}')
         print(f'max features = {self.max_features}')
@@ -271,7 +318,7 @@ class RandomForest():
         print(f'max depth    = {self.max_depth}')
         print(f'acc          = {acc}')
         print('====================')
-    
+
     def predict(self, x_data):
         mis_count = 0
         x_pred = []
@@ -284,15 +331,21 @@ class RandomForest():
             label, cnt = np.unique(vote_now, return_counts=True)
             vote_now = label[np.argmax(cnt)]
             x_pred.append(vote_now)
-            if vote_now == row[:,-1]:
+            # print(f'{vote_now} and {row[:,-1]}')
+            # print(vote_now==row[:, -1])
+            if vote_now != row[:,-1]:
                 mis_count = mis_count + 1
         acc = 1 - mis_count / len(x_data)
         self.print_acc(acc)
+        # print(np.array(x_pred))
+        # print(x_data[:, -1].astype(np.int32))
         return acc, x_pred
-    
-clf_10tree = RandomForest(n_estimators=10, max_features=np.sqrt(x_train.shape[1]), max_depth=None, criterion='gini')
-clf_10tree.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-clf_10tree.predict(x_data=x_test)
-clf_100tree = RandomForest(n_estimators=100, max_features=np.sqrt(x_train.shape[1]), max_depth=None, criterion='gini')
+
+
+# clf_10tree = RandomForest(n_estimators=10, max_features=np.sqrt(x_train.shape[1]), max_depth=None, criterion='gini')
+# clf_10tree.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+# clf_10tree.predict(x_data=x_test)
+clf_100tree = RandomForest(n_estimators=100, max_features=np.sqrt(
+    x_train.shape[1]), max_depth=None, criterion='gini')
 clf_100tree.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
 clf_100tree.predict(x_data=x_test)
