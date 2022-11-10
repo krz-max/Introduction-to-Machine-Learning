@@ -70,7 +70,10 @@ class DecisionTree():
             return None
 
     def Informationgain(self, left_rows, right_rows, currentImpurity, l_weight=None, r_weight=None):
-        p = float(len(left_rows)) / (len(left_rows) + len(right_rows))
+        if l_weight is not None and r_weight is not None:
+            p = np.sum(l_weight) / (np.sum(l_weight) + np.sum(r_weight))
+        else:
+            p = float(len(left_rows)) / (len(left_rows) + len(right_rows))
         return currentImpurity - p * self.measureFunc(left_rows[:, -1].astype(np.int32), weight=l_weight) - (1 - p) * self.measureFunc(right_rows[:, -1].astype(np.int32), weight=r_weight)
 
     def find_best_split(self, rows):
@@ -95,19 +98,20 @@ class DecisionTree():
             n_cols = np.arange(self.n_features-1) # [0, 21)
         # print(n_cols)
         # for each feature
+        col_sort = rows
         for col in n_cols:
             # sort data using values in column `col`
             # extract the data sorted using current feature
-            col_sort = rows[np.argsort(rows[:, col])]
-            # adaboost
-            if self.sample_weight is not None:
-                self.sample_weight = self.sample_weight[np.argsort(rows[:, col])]
+            
+            # except adaboost
+            # sample weight is not None for adaboost -> don't do sorting
+            if self.sample_weight is None:
+                col_sort = rows[np.argsort(rows[:, col])]
 
             # Try N-1 threshold values
-            for idx in range(len(col_sort)-1):
+            for idx in range(len(col_sort)):
                 # i-th and i+1-th sorted value as current threshold
-                current_threshold = (
-                    col_sort[idx, col] + col_sort[idx+1, col]) / 2.0
+                current_threshold = col_sort[idx, col]
 
                 # is data[col] >= current_threshold ?
                 # if it's binary, the threshold is 0.5, so it's ok to use '>=' to compare
@@ -140,7 +144,8 @@ class DecisionTree():
                 if current_gain >= best_gain:
                     best_gain, best_question = current_gain, question
 
-        print(f'{train_df.columns[best_question.column]}: {best_question.value}, {best_gain}')
+        # print(f'{train_df.columns[best_question.column]}: {best_question.value}, {best_gain}')
+        print(f'maximum gain: {best_gain}')
         label = train_df.columns[best_question.column]
         if self.feature_count.get(label) is not None:
             self.feature_count[label] = self.feature_count[label] + 1
@@ -167,8 +172,7 @@ class DecisionTree():
                 cur_node.pred = 0
         else:
             best_gain, best_question = self.find_best_split(rows=rows)
-            # print(train_df.columns[best_question.column])
-            # print(best_question.value)
+            # print(f'{train_df.columns[best_question.column]}:{best_question.value}')
             cur_node.rows = rows
             cur_node.gain = best_gain
             cur_node.question = best_question
@@ -176,6 +180,7 @@ class DecisionTree():
                             >= best_question.value]
             right_child = rows[rows[:, best_question.column]
                             < best_question.value]
+            # print(f'# left child:{len(left_child)}, # right child:{len(right_child)}')
             if cur_depth is None:
                 cur_node.left = self.generateTree(rows=left_child)
                 cur_node.right = self.generateTree(rows=right_child)
@@ -262,24 +267,27 @@ class AdaBoost():
         self.distribution = np.repeat(1 / x_data.shape[0], x_data.shape[0])
         for iter in range(self.n_estimators):
             print(f'tree {iter+1}')
+            # print(f'sample_weight: {self.distribution[0:10]}')
             self.n_trees[iter].sample_weight = self.distribution
             self.n_trees[iter].fit(x_data=x_data, y_data=y_data)
+            
             # predict
             pred = self.n_trees[iter].predict(x_data)
-            
             pred = np.where(pred != y_data, 1, 0)
+            # print(f'total misclassified: {np.sum(pred)}')
 
             error_t = np.sum(pred * self.distribution)
-            print(f'error_t {error_t}')
-            weight_t = (1/2) * np.log((1-error_t) / (error_t))
+            # print(f'error_t {error_t}')
+            weight_t = (0.5) * np.log((1-error_t) / (error_t))
+            # print(f'weight_t {weight_t}')
             self.weight.append(weight_t)
         
             # wrong pred => -1, right pred => 1
             pred = np.where(pred == 0, 1, -1)
-            print(f'pred: {pred[0:10]}')
+            # print(f'pred: {pred[0:10]}')
             self.distribution = self.distribution * np.exp((-1) * weight_t * pred)
+            # print(f'new weight: {self.distribution[0:10]}')
             self.distribution = self.distribution / np.sum(self.distribution)
-            print(f'sample_weight: {self.distribution[0:10]}')
             
         self.weight = np.array(self.weight)
 
@@ -319,7 +327,7 @@ class RandomForest():
                 self.n_trees[iter].fit(rows, y_data[n_rows])
             else:
                 self.n_trees[iter].fit(x_data=x_data, y_data=y_data)
-            print(f'{iter+1} tree done')
+            # print(f'{iter+1} tree done')
         return
 
     def print_acc(self, ans, pred):
@@ -381,15 +389,15 @@ def main1():
 
 def main2():
     print('Adaboost(not done)')
-    ada_10est = AdaBoost(n_estimators=5)
+    ada_10est = AdaBoost(n_estimators=10)
     ada_10est.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
     pred = ada_10est.predict(x_data=x_test[:, 0:20])
     ada_10est.print_acc(x_test[:, -1], pred)
 
-    # ada_100est = AdaBoost(n_estimators=100)
-    # ada_100est.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-    # pred = ada_100est.predict(x_data=x_test[:, 0:20])
-    # ada_100est.print_acc(x_test[:, -1], pred)
+    ada_100est = AdaBoost(n_estimators=100)
+    ada_100est.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+    pred = ada_100est.predict(x_data=x_test[:, 0:20])
+    ada_100est.print_acc(x_test[:, -1], pred)
 
 def main3():
     print('Random Forest()')
@@ -398,18 +406,18 @@ def main3():
     pred = clf_10tree.predict(x_data=x_test[:, 0:20])
     clf_10tree.print_acc(x_test[:, -1], pred)
 
-    # clf_100tree = RandomForest(n_estimators=100, max_features=np.sqrt(
-    #     x_train.shape[1]), max_depth=None, criterion='gini')
-    # clf_100tree.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-    # pred = clf_100tree.predict(x_data=x_test[:, 0:20])
-    # clf_100tree.print_acc(x_test[:, -1], pred)
+    clf_100tree = RandomForest(n_estimators=100, max_features=np.sqrt(
+        x_train.shape[1]), max_depth=None, criterion='gini')
+    clf_100tree.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+    pred = clf_100tree.predict(x_data=x_test[:, 0:20])
+    clf_100tree.print_acc(x_test[:, -1], pred)
 
 def main4():
     print('Random Forest-2()')
-    # clf_random_features = RandomForest(n_estimators=10, max_features=np.sqrt(x_train.shape[1]))
-    # clf_random_features.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-    # pred = clf_random_features.predict(x_data=x_test[:, 0:20])
-    # clf_random_features.print_acc(x_test[:, -1], pred)
+    clf_random_features = RandomForest(n_estimators=10, max_features=np.sqrt(x_train.shape[1]))
+    clf_random_features.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+    pred = clf_random_features.predict(x_data=x_test[:, 0:20])
+    clf_random_features.print_acc(x_test[:, -1], pred)
 
     clf_all_features = RandomForest(n_estimators=10, max_features=x_train.shape[1])
     clf_all_features.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
@@ -523,17 +531,17 @@ def test():
     print(score)
     print("*** We will check your result for Question 3 manually *** (5 points)")
 
-#     score += patient_checker(
-#     7.5, 0.91, AdaBoost, {"n_estimators": 10},
-#     "AdaBoost(n_estimators=10)",
-#     x_train, y_train, x_test, y_test
-# )
+    score += patient_checker(
+    7.5, 0.91, AdaBoost, {"n_estimators": 10},
+    "AdaBoost(n_estimators=10)",
+    x_train, y_train, x_test, y_test
+)
 
-#     score += patient_checker(
-#     7.5, 0.87, AdaBoost, {"n_estimators": 100},
-#     "AdaBoost(n_estimators=100)",
-#     x_train, y_train, x_test, y_test
-# )
+    score += patient_checker(
+    7.5, 0.87, AdaBoost, {"n_estimators": 100},
+    "AdaBoost(n_estimators=100)",
+    x_train, y_train, x_test, y_test
+)
 
     score += patient_checker(
     5, 0.91, RandomForest,
@@ -561,9 +569,9 @@ def test():
     print("*** This score is only for reference ***")
 
 if __name__ == '__main__':
-    # main1() # done
+    main1() # done
     main2() # ada
-    # main3() # done
-    # main4() # done
+    main3() # done
+    main4() # done
     # others() #test1
-    # test() #test2
+    test() #test2
