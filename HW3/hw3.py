@@ -145,7 +145,7 @@ class DecisionTree():
                     best_gain, best_question = current_gain, question
 
         # print(f'{train_df.columns[best_question.column]}: {best_question.value}, {best_gain}')
-        print(f'maximum gain: {best_gain}')
+        # print(f'maximum gain: {best_gain}')
         label = train_df.columns[best_question.column]
         if self.feature_count.get(label) is not None:
             self.feature_count[label] = self.feature_count[label] + 1
@@ -251,7 +251,7 @@ class AdaBoost():
         self.weight = []
         return None
     
-    def feature_count(self):
+    def get_feature_count(self):
         for iter in range(self.n_estimators):
             self.n_trees[iter].get_feature_count()
         return 
@@ -262,11 +262,11 @@ class AdaBoost():
         print(f'criterion = {self.criterion}')
         print(f'acc       = {acc}')
         print('====================')
-
+    
     def fit(self, x_data, y_data):
         self.distribution = np.repeat(1 / x_data.shape[0], x_data.shape[0])
         for iter in range(self.n_estimators):
-            print(f'tree {iter+1}')
+            # print(f'tree {iter+1}')
             # print(f'sample_weight: {self.distribution[0:10]}')
             self.n_trees[iter].sample_weight = self.distribution
             self.n_trees[iter].fit(x_data=x_data, y_data=y_data)
@@ -313,6 +313,11 @@ class RandomForest():
         self.max_depth = max_depth
         self.n_trees = [DecisionTree(self.criterion, self.max_depth, self.max_features) for i in range(self.n_estimators)]
         return None
+    
+    def get_feature_count(self):
+        for iter in range(self.n_estimators):
+            self.n_trees[iter].get_feature_count()
+        return 
 
     def fit(self, x_data, y_data):
         for iter in range(self.n_estimators):
@@ -362,6 +367,17 @@ x_test = np.array(val_df)
 new_test_df = pd.read_csv('x_test.csv')
 new_test = np.array(new_test_df)
 
+# train_df = pd.read_csv('train.csv')
+# val_df = pd.read_csv('val.csv')
+
+# # dataset for question 2~5
+# train_data_2_5 = np.array(train_df)
+# test_data_2_5 = np.array(val_df)
+# # use these data to train model for Q6
+# train_data_6 = np.vstack((train_data_2_5, test_data_2_5))
+# print(train_data_6.shape)
+# train_df.head()
+
 def main1():
     print('Decision Tree')
     clf_depth3 = DecisionTree(criterion='gini', max_depth=3)
@@ -372,18 +388,19 @@ def main1():
 
     clf_depth10 = DecisionTree(criterion='gini', max_depth=10)
     clf_depth10.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
+    clf_depth10.get_feature_count()
     pred = clf_depth10.predict(x_test[:, 0:20])
     clf_depth10.print_acc(x_test[:, -1], pred)
 
     clf_gini = DecisionTree(criterion='gini', max_depth=3)
     clf_gini.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-    # clf_gini.get_feature_count()
+    clf_gini.get_feature_count()
     pred = clf_gini.predict(x_test[:, 0:20])
     clf_gini.print_acc(x_test[:, -1], pred)
 
     clf_entropy = DecisionTree(criterion='entropy', max_depth=3)
     clf_entropy.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
-    # clf_entropy.get_feature_count()
+    clf_entropy.get_feature_count()
     pred = clf_entropy.predict(x_test[:, 0:20])
     clf_entropy.print_acc(x_test[:, -1], pred)
 
@@ -392,9 +409,10 @@ def main2():
     ada_10est = AdaBoost(n_estimators=10)
     ada_10est.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
     pred = ada_10est.predict(x_data=x_test[:, 0:20])
+    ada_10est.get_feature_count()
     ada_10est.print_acc(x_test[:, -1], pred)
 
-    ada_100est = AdaBoost(n_estimators=100)
+    ada_100est = AdaBoost(n_estimators=35)
     ada_100est.fit(x_data=x_train[:, 0:20], y_data=x_train[:, -1])
     pred = ada_100est.predict(x_data=x_test[:, 0:20])
     ada_100est.print_acc(x_test[:, -1], pred)
@@ -426,9 +444,9 @@ def main4():
 
 def train_your_model(data):
     ## Define your model and training 
-    clf_random_features = RandomForest(n_estimators=10, max_features=np.sqrt(x_train.shape[1]))
-    clf_random_features.fit(x_data=data[:, 0:20], y_data=data[:, -1])
-    return clf_random_features
+    ada_35est = AdaBoost(n_estimators=5)
+    ada_35est.fit(x_data=data[:, 0:len(data[0])-1], y_data=data[:, -1])
+    return ada_35est
 
 def others():
     my_model = train_your_model(np.array(train_df))
@@ -569,9 +587,9 @@ def test():
     print("*** This score is only for reference ***")
 
 if __name__ == '__main__':
-    main1() # done
-    main2() # ada
+    # main1() # done
+    # main2() # ada
     main3() # done
     main4() # done
     # others() #test1
-    test() #test2
+    # test() #test2
