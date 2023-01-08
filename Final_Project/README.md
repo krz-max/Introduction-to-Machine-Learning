@@ -32,7 +32,7 @@ Our model achieves the following performance on :
 | ------------------ |---------------- | -------------- |
 | Logistic Regression   |     0.59224        |      0.58879       |
 
-The ROC Curve is here:
-![]("./ROC_curve.jpg")
+The ROC Curve is here: 
+![](ROC_curve.jpg)
 
 
