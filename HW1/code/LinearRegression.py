@@ -1,6 +1,7 @@
-import numpy as np 
-import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 
 def CalculateLoss(Error):
     return Error.dot(Error.T) / len(Error)
