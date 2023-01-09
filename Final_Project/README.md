@@ -7,10 +7,11 @@ Requirements are documented in the first section of code in the file `Final_Trai
 
 ## Training
 
-To train the model(s), download the notebook and simply press the `run all` command
+To train the model(s), download the notebook:`Train.ipynb` and simply press the `run all` command
 
 ## Evaluation
-
+* You could download `Inference.ipynb` and press `run all` to skip the training process
+  * You may just use the `Train.ipynb` because the training is actually fast(1~2 mins running all codes in `Train.ipynb`).
 To evaluate my model on Kaggle:
 1. After the `Training` process or `Inference` process, there should be a new file `submission.csv`
 2. Upload the `submission.csv` to the Kaggle playground, click [here](https://www.kaggle.com/competitions/tabular-playground-series-aug-2022/overview) to access the website.
