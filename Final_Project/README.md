@@ -6,7 +6,7 @@ This repository is the official implementation of [Tabular Playground Series - A
 Requirements are documented in the first section of code in the file `Final_Train.ipynb`
 
 ## Training
-
+❗❗❗Please place the data, model, and the code in the same folder❗❗❗<br>
 To train the model(s), download the notebook:`Train.ipynb` and simply press the `run all` command
 
 ## Evaluation
@@ -33,8 +33,7 @@ Our model achieves the following performance on :
 | ------------------ |---------------- | -------------- |
 | Logistic Regression   |     0.59224        |      0.58879       |
 
-The ROC Curve is here:
-  
+The ROC Curve is here:<br>
 ![](ROC_curve.jpg)
 
 
