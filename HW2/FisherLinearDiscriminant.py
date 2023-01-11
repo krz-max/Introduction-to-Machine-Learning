@@ -1,7 +1,4 @@
-from email.headerregistry import Group
-from tkinter.messagebox import NO
 import numpy as np
-from heapq import nsmallest
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 
@@ -107,4 +104,3 @@ if __name__ == "__main__":
     # Plotting Result
     PlotResult(Bias=0, MarkerSize=4, Alpha=0.2, LineWidth=0.5, Group1=Group1, Group2=Group2, weight=w)
     
-    pass
