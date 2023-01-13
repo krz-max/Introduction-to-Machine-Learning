@@ -1,4 +1,5 @@
-# [NYCU 2022 Fall] Introduction to Machine Learning - Instructor: Prof. [Yen-Yu Lin](https://www.cs.nycu.edu.tw/members/detail/lin)
+# [NYCU 2022 Fall] Introduction to Machine Learning
+### Instructor: Prof. [Yen-Yu Lin](https://www.cs.nycu.edu.tw/members/detail/lin)
 
 * You could download the notebooks & data, put them all in the same folder and `run all` on your local environment or GoogleColab
 * You need to unzip the data first
