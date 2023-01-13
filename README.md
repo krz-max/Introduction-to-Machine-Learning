@@ -1,8 +1,8 @@
-# ML_intro
+# [NYCU 2022 Fall] Introduction to Machine Learning
 
-* You could download the notebooks & data then `run all` on your local environment or GoogleColab
+* You could download the notebooks & data, put them all in the same folder and `run all` on your local environment or GoogleColab
+* You need to unzip the data first
 * You might need to download some package if you don't have some of them.
-
 
 ## HW1: Logistic regression and Linear Regression using Gradient Descent
 
@@ -23,8 +23,8 @@ Intercept is [4.5803] and weights are [1.5370]
 
 | Method            | Learning Curve | Result |
 | ----------------- | -------- | -------- |
-| Logistic Regression | ![](HW1/logistic_training_loss.jpg) | ![](HW1/Logistic_Result.jpg)         |
-| Linear Regression | ![](HW1/linear_training_loss.jpg)     | ![](HW1/Linear_Result.jpg)     |
+| Logistic Regression | ![](Results/logistic_training_loss.jpg) | ![](Results/Logistic_Result.jpg)         |
+| Linear Regression | ![](Results/linear_training_loss.jpg)     | ![](Results/Linear_Result.jpg)     |
 
 
 ## HW2: Linear Discriminant Analysis
@@ -36,17 +36,10 @@ Please note that only NUMPY can be used to implement your model, you will get no
 
 Find the questions at https://docs.google.com/document/d/1T7JLWuDtzOgEQ_OPSgsSiQdp5pd-nS5bKTdU3RR48Z4/edit?usp=sharing
 
-### Result
+### Projection Result
+![](Results/FLD_ProjectionResult.jpg)
 
-| Attributes            | Class 1 | Class 2|
-| ----------------- | -------- | ------- |
-| mean vectors |  | |
-| within-class matrix |      | |
-| between-class matrix |      | |
-| Fisher's Linear Discriminant |      | |
-
-* Projection Result<br>
-![]()
+* From HW3 to HW5, see the result in the `report.pdf`
 
 ## HW3: Decision Tree, AdaBoost and Random Forest
 
@@ -56,8 +49,6 @@ In this coding assignment, you need to implement the Decision Tree, AdaBoost and
 Please note that only NumPy can be used to implement your model, you will get no points by simply calling sklearn.tree.DecsionTreeClassifier.
 
 Find the questions at this [document](https://docs.google.com/document/d/1ODV5FtIIn6fXjExL6cF8UOsQ-ctu53jObOAjrcSmqfw/edit?usp=sharing)
-
-### Result
 
 
 ## HW4: Decision Tree, AdaBoost and Random Forest
@@ -69,11 +60,23 @@ Please note that only NumPy can be used to implement cross-validation and grid s
 
 Find the questions at this [document](https://docs.google.com/document/d/1YvMXHrcyxQrBHbGEZgPZbMVtXesSQuIm/edit?usp=sharing&ouid=106791491758005483971&rtpof=true&sd=true)
 
-### Result
 
+## HW5: Simple Captcha Hacker using Neural Network
 
+### Goals
+Implement the deep neural network by any deep learning frameworks, e.g., Pytorch, TensorFlow and Keras, and then train DNN model on the provided dataset
+Find the Kaggle page [here](https://www.kaggle.com/competitions/captcha-hacker/overview)
 
-## HW5: Simple Captcha Hacker
+### Example
+* Train a model to predict all the digits in the image
+    * Task 1: Single character in the image
+    * Task 2: Two characters in the image (order matters)
+    * Task 3: Four characters in the image (order matters)
+![](Results/Example.jpg)
+* Download the Data [Here](https://www.kaggle.com/competitions/captcha-hacker/data)
 
+## Final Project: Product Failure Prediction
 
-### Result
+* Download the Data [Here](https://www.kaggle.com/competitions/tabular-playground-series-aug-2022/data)
+* For more information, read `README.md` in the folder `Final_Project`
+
